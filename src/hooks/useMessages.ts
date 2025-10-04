@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
 import { Message } from "../types/Message";
-import { fetchMessages } from "../utils/api";
 
 export const useMessages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [replyTo, setReplyTo] = useState<Message | undefined>();
 
+  const fetchMessages = async () => {
+    const res = await fetch("https://your-backend.com/api/messages");
+    const data = await res.json();
+    setMessages(data);
+  };
+
   useEffect(() => {
-    fetchMessages().then(setMessages);
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   return { messages, replyTo, setReplyTo };

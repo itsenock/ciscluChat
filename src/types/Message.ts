@@ -1,12 +1,14 @@
-export type MessageStatus = "sending" | "delivered";
-
 export interface Message {
   id: string;
   senderId: string;
   senderName: string;
-  type: "text" | "document" | "reply";
   content: string;
-  replyTo?: Message;
+  type: "text" | "document";
   timestamp: number;
-  status: MessageStatus;
+  status?: "sent" | "delivered";
+  replyTo?: {
+    id: string;
+    content: string;
+    senderName: string;
+  };
 }
