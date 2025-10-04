@@ -17,7 +17,6 @@ export const ChatRoom = () => {
   const [expandMembersDesktop, setExpandMembersDesktop] = useState(false);
   const mobilePopupRef = useRef<HTMLDivElement>(null);
 
-  // Close mobile member list on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -34,7 +33,6 @@ export const ChatRoom = () => {
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-[#f0f8ff] dark:bg-gray-900 transition-colors duration-300">
-      {/* Chat Section */}
       <div className="flex flex-col flex-1">
         <ChatHeader
           name="CISLU Tech Group"
@@ -44,19 +42,13 @@ export const ChatRoom = () => {
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-[#f0f8ff] dark:bg-gray-900 transition-colors duration-300">
           {messages.map((msg) => (
-            <div
+            <MessageBubble
               key={msg.id}
-              onClick={() => setReplyTo(msg)}
-              className="transition duration-300 ease-in-out hover:scale-[1.01]"
-            >
-              <MessageBubble
-                message={msg}
-                isOwn={msg.senderId === currentUser.id}
-              />
-            </div>
+              message={msg}
+              isOwn={msg.senderId === currentUser.id}
+              onReply={setReplyTo}
+            />
           ))}
-          {/* Optional Typing Indicator */}
-          {/* <TypingIndicator name="Someone" /> */}
         </div>
 
         <MessageInput
@@ -66,7 +58,6 @@ export const ChatRoom = () => {
         />
       </div>
 
-      {/* Desktop Member List (Expandable) */}
       <div
         className={`hidden md:block transition-all duration-300 ease-in-out ${
           expandMembersDesktop ? "w-80" : "w-64"
@@ -75,7 +66,6 @@ export const ChatRoom = () => {
         <MemberList members={members} />
       </div>
 
-      {/* Floating Action Buttons */}
       <div className="fixed md:top-4 md:right-4 bottom-4 right-4 flex flex-col gap-3 z-50">
         <button
           onClick={() => {
@@ -98,7 +88,6 @@ export const ChatRoom = () => {
         </a>
       </div>
 
-      {/* Mobile Member Dropdown */}
       {showMembersMobile && (
         <div
           ref={mobilePopupRef}

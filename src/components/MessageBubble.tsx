@@ -1,12 +1,15 @@
 import { Message } from "../types/Message";
 import dayjs from "dayjs";
+import { ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 
 export const MessageBubble = ({
   message,
   isOwn,
+  onReply,
 }: {
   message: Message;
   isOwn: boolean;
+  onReply: (msg: Message) => void;
 }) => {
   const bubbleColor = isOwn
     ? "bg-[#e6f7ff] dark:bg-[#2a3b2e]"
@@ -15,12 +18,12 @@ export const MessageBubble = ({
   const textAlign = isOwn ? "text-right" : "text-left";
 
   return (
-    <div className={`flex flex-col ${alignment} mb-6`}>
+    <div className={`flex flex-col ${alignment} mb-6 group`}>
       <div className={`text-xs text-gray-500 dark:text-gray-400 ${textAlign}`}>
         {message.senderName}
       </div>
       <div
-        className={`relative max-w-[90%] md:max-w-[80%] px-3 py-2 rounded-xl shadow-sm ${bubbleColor} hover:scale-[1.01] transition-transform duration-200 ease-in-out`}
+        className={`relative max-w-[90%] md:max-w-[80%] px-3 py-2 rounded-xl shadow-sm ${bubbleColor}`}
       >
         {message.replyTo && (
           <div className="text-xs text-gray-400 italic border-l-2 border-gray-300 pl-2 mb-1">
@@ -41,6 +44,14 @@ export const MessageBubble = ({
             {message.content}
           </p>
         )}
+
+        {/* Reply Icon */}
+        <button
+          onClick={() => onReply(message)}
+          className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
+        >
+          <ArrowUturnLeftIcon className="w-4 h-4 text-gray-500 dark:text-gray-300" />
+        </button>
       </div>
       <div className="mt-1 text-[10px] text-gray-400 flex items-center gap-1">
         {dayjs(message.timestamp).format("HH:mm")}
