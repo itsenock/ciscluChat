@@ -34,7 +34,7 @@ export const MessageInput = ({
     };
 
     try {
-      await fetch("https://your-backend.com/api/messages", {
+      await fetch("https://chat-room-1e3o.onrender.com/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -56,10 +56,13 @@ export const MessageInput = ({
     formData.append("file", file);
 
     try {
-      const res = await fetch("https://your-backend.com/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "https://chat-room-1e3o.onrender.com/api/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
       const { url } = await res.json();
 
       const payload = {
@@ -77,7 +80,7 @@ export const MessageInput = ({
           : null,
       };
 
-      await fetch("https://your-backend.com/api/messages", {
+      await fetch("https://chat-room-1e3o.onrender.com/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
