@@ -5,7 +5,7 @@ export const useMembers = () => {
   const [members, setMembers] = useState<Member[]>([]);
 
   useEffect(() => {
-    fetch("https://your-backend.com/api/members")
+    fetch("https://chat-room-1e3o.onrender.com/api/members")
       .then((res) => res.json())
       .then(setMembers);
   }, []);
