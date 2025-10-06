@@ -8,7 +8,11 @@ import { TypingIndicator } from "./TypingIndicator";
 import { useState, useEffect, useRef } from "react";
 import { HomeIcon, UsersIcon } from "@heroicons/react/24/outline";
 
-const currentUser = { id: "u1", name: "Its" };
+const urlParams = new URLSearchParams(window.location.search);
+const currentUser = {
+  id: urlParams.get("id") || "unknown",
+  name: urlParams.get("name") || "Anonymous",
+};
 
 export const ChatRoom = () => {
   const members = useMembers();
