@@ -1,7 +1,16 @@
-import { ChatRoom } from "./components/ChatRoom";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Login } from './components/Login';
+import { ChatRoom } from './components/ChatRoom';
 
 function App() {
-  return <ChatRoom />;
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/chat" element={<ChatRoom />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

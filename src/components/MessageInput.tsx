@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, KeyboardEvent } from "react";
 import { PaperAirplaneIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { Message } from "../types/Message";
 
@@ -22,6 +22,7 @@ export const MessageInput = ({
       content: input,
       type: "text",
       timestamp: Date.now(),
+      status: "delivered",
       replyTo: replyTo
         ? {
             id: replyTo.id,
@@ -44,6 +45,13 @@ export const MessageInput = ({
     }
   };
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
   return (
     <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
       {replyTo && (
@@ -57,12 +65,14 @@ export const MessageInput = ({
           </button>
         </div>
       )}
-      <div className="flex items-center gap-2">
-        <input
+      <div className="flex items-end gap-2">
+        <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-1 px-4 py-2 rounded-full border dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onKeyDown={handleKeyDown}
+          placeholder="Type your message... (Enter for newline, Shift+Enter to send)"
+          rows={2}
+          className="flex-1 px-4 py-2 rounded-lg border dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm text-gray-800 dark:text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           onClick={sendMessage}

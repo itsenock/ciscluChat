@@ -4,15 +4,13 @@ import { ChatHeader } from "./ChatHeader";
 import { MemberList } from "./MemberList";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
-import { TypingIndicator } from "./TypingIndicator";
 import { useState, useEffect, useRef } from "react";
 import { HomeIcon, UsersIcon } from "@heroicons/react/24/outline";
 
-const urlParams = new URLSearchParams(window.location.search);
-const currentUser = {
-  id: urlParams.get("id") || "unknown",
-  name: urlParams.get("name") || "Anonymous",
-};
+const savedUser = localStorage.getItem("chat-user");
+const currentUser = savedUser
+  ? JSON.parse(savedUser)
+  : { id: "unknown", name: "Anonymous" };
 
 export const ChatRoom = () => {
   const members = useMembers();
@@ -44,7 +42,7 @@ export const ChatRoom = () => {
           memberCount={members.length}
         />
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-[#f0f8ff] dark:bg-gray-900 transition-colors duration-300">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#f0f8ff] dark:bg-gray-900 transition-colors duration-300">
           {messages.map((msg) => (
             <MessageBubble
               key={msg.id}
@@ -70,7 +68,7 @@ export const ChatRoom = () => {
         <MemberList members={members} />
       </div>
 
-      <div className="fixed md:top-4 md:right-4 bottom-4 right-4 flex flex-col gap-3 z-50">
+      <div className="fixed md:top-4 md:right-4 bottom-20 right-4 flex flex-col gap-3 z-50">
         <button
           onClick={() => {
             if (window.innerWidth < 768) {
