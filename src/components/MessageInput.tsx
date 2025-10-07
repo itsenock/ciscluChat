@@ -6,17 +6,20 @@ export const MessageInput = ({
   replyTo,
   clearReply,
   currentUser,
+  setMessages,
 }: {
   replyTo?: Message;
   clearReply: () => void;
   currentUser: { id: string; name: string };
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }) => {
   const [input, setInput] = useState("");
 
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessage = {
+    const newMessage: Message = {
+      id: `local-${Date.now()}`,
       senderId: currentUser.id,
       senderName: currentUser.name,
       content: input,
@@ -32,12 +35,15 @@ export const MessageInput = ({
         : undefined,
     };
 
+    setMessages((prev) => [...prev, newMessage]); // show instantly
+
     try {
       await fetch("https://chat-room-1e3o.onrender.com/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newMessage),
       });
+      window.dispatchEvent(new Event("message-sent")); // silent refresh
       setInput("");
       clearReply();
     } catch (err) {
@@ -57,7 +63,7 @@ export const MessageInput = ({
       {replyTo && (
         <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
           <span>
-            Replying to <strong>{replyTo.senderName}</strong>:{" "}
+            Replied to <strong>{replyTo.senderName}</strong>:{" "}
             {replyTo.content.slice(0, 40)}...
           </span>
           <button onClick={clearReply}>

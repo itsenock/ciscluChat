@@ -1,6 +1,3 @@
-import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
-import { useTheme } from "../context/ThemeContext";
-
 export const ChatHeader = ({
   name,
   description,
@@ -10,8 +7,6 @@ export const ChatHeader = ({
   description: string;
   memberCount: number;
 }) => {
-  const { darkMode, toggleDarkMode } = useTheme();
-
   return (
     <div className="sticky top-0 bg-white dark:bg-gray-800 p-4 border-b dark:border-gray-700 shadow-sm z-10 transition-colors duration-300">
       <div className="flex justify-between items-center">
@@ -24,16 +19,6 @@ export const ChatHeader = ({
           </p>
           <p className="text-xs text-gray-400">{memberCount} members</p>
         </div>
-        <button
-          onClick={toggleDarkMode}
-          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-        >
-          {darkMode ? (
-            <SunIcon className="w-5 h-5 text-yellow-400" />
-          ) : (
-            <MoonIcon className="w-5 h-5 text-gray-600" />
-          )}
-        </button>
       </div>
     </div>
   );

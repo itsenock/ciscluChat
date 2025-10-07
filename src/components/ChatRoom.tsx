@@ -5,6 +5,7 @@ import { MemberList } from "./MemberList";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect, useRef } from "react";
 import { HomeIcon, UsersIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +26,7 @@ export const ChatRoom = () => {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const members = useMembers();
-  const { messages, replyTo, setReplyTo, loading } = useMessages();
+  const { messages, replyTo, setReplyTo, loading, setMessages } = useMessages();
   const [showMembersMobile, setShowMembersMobile] = useState(false);
   const [expandMembersDesktop, setExpandMembersDesktop] = useState(false);
   const mobilePopupRef = useRef<HTMLDivElement>(null);
@@ -86,6 +87,7 @@ export const ChatRoom = () => {
           replyTo={replyTo}
           clearReply={() => setReplyTo(undefined)}
           currentUser={currentUser}
+          setMessages={setMessages}
         />
       </div>
 
@@ -97,7 +99,8 @@ export const ChatRoom = () => {
         <MemberList members={members} />
       </div>
 
-      <div className="fixed md:top-4 md:right-4 bottom-20 right-4 flex flex-col gap-3 z-50">
+      <div className="fixed top-4 right-4 flex flex-col gap-3 z-50">
+        <ThemeToggle />
         <button
           onClick={() => {
             if (window.innerWidth < 768) {
@@ -122,7 +125,7 @@ export const ChatRoom = () => {
       {showMembersMobile && (
         <div
           ref={mobilePopupRef}
-          className="absolute bottom-24 right-4 w-64 bg-white dark:bg-gray-800 border rounded-lg shadow-lg p-4 animate-slide-up z-40"
+          className="absolute top-20 right-4 w-64 bg-white dark:bg-gray-800 border rounded-lg shadow-lg p-4 animate-slide-up z-40"
         >
           <MemberList members={members} />
           <button
