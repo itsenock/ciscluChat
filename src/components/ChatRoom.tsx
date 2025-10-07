@@ -1,22 +1,23 @@
-import { useMembers } from '../hooks/useMembers';
-import { useMessages } from '../hooks/useMessages';
-import { ChatHeader } from './ChatHeader';
-import { MemberList } from './MemberList';
-import { MessageBubble } from './MessageBubble';
-import { MessageInput } from './MessageInput';
-import { useState, useEffect, useRef } from 'react';
-import { HomeIcon, UsersIcon } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
+import { useMembers } from "../hooks/useMembers";
+import { useMessages } from "../hooks/useMessages";
+import { ChatHeader } from "./ChatHeader";
+import { MemberList } from "./MemberList";
+import { MessageBubble } from "./MessageBubble";
+import { MessageInput } from "./MessageInput";
+import { LoadingSpinner } from "./LoadingSpinner";
+import { useState, useEffect, useRef } from "react";
+import { HomeIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { useNavigate } from "react-router-dom";
 
 const getCurrentUser = () => {
   try {
-    const raw = localStorage.getItem('chat-user');
-    if (!raw) return { id: 'unknown', name: 'Anonymous' };
+    const raw = localStorage.getItem("chat-user");
+    if (!raw) return { id: "unknown", name: "Anonymous" };
     const parsed = JSON.parse(raw);
-    if (!parsed.id || !parsed.name) throw new Error('Invalid user');
+    if (!parsed.id || !parsed.name) throw new Error("Invalid user");
     return parsed;
   } catch {
-    return { id: 'unknown', name: 'Anonymous' };
+    return { id: "unknown", name: "Anonymous" };
   }
 };
 
@@ -24,20 +25,20 @@ export const ChatRoom = () => {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const members = useMembers();
-  const { messages, replyTo, setReplyTo } = useMessages();
+  const { messages, replyTo, setReplyTo, loading } = useMessages();
   const [showMembersMobile, setShowMembersMobile] = useState(false);
   const [expandMembersDesktop, setExpandMembersDesktop] = useState(false);
   const mobilePopupRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (currentUser.id === 'unknown') {
-      navigate('/');
+    if (currentUser.id === "unknown") {
+      navigate("/");
     }
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
@@ -50,8 +51,8 @@ export const ChatRoom = () => {
         setShowMembersMobile(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMembersMobile]);
 
   return (
@@ -64,15 +65,21 @@ export const ChatRoom = () => {
         />
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#f0f8ff] dark:bg-gray-900 transition-colors duration-300">
-          {messages.map(msg => (
-            <MessageBubble
-              key={msg.id}
-              message={msg}
-              isOwn={msg.senderId === currentUser.id}
-              onReply={setReplyTo}
-            />
-          ))}
-          <div ref={bottomRef} />
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              {messages.map((msg) => (
+                <MessageBubble
+                  key={msg.id}
+                  message={msg}
+                  isOwn={msg.senderId === currentUser.id}
+                  onReply={setReplyTo}
+                />
+              ))}
+              <div ref={bottomRef} />
+            </>
+          )}
         </div>
 
         <MessageInput
@@ -84,7 +91,7 @@ export const ChatRoom = () => {
 
       <div
         className={`hidden md:block transition-all duration-300 ease-in-out ${
-          expandMembersDesktop ? 'w-80' : 'w-64'
+          expandMembersDesktop ? "w-80" : "w-64"
         } bg-white dark:bg-gray-800 border-l dark:border-gray-700 p-4 overflow-y-auto`}
       >
         <MemberList members={members} />
@@ -104,7 +111,10 @@ export const ChatRoom = () => {
           <UsersIcon className="w-5 h-5" />
         </button>
 
-        <a href="/" className="bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700">
+        <a
+          href="/"
+          className="bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700"
+        >
           <HomeIcon className="w-5 h-5" />
         </a>
       </div>
@@ -115,7 +125,12 @@ export const ChatRoom = () => {
           className="absolute bottom-24 right-4 w-64 bg-white dark:bg-gray-800 border rounded-lg shadow-lg p-4 animate-slide-up z-40"
         >
           <MemberList members={members} />
-          <button onClick={() => setShowMembersMobile(false)} className="mt-2 text-red-500 text-sm">Close</button>
+          <button
+            onClick={() => setShowMembersMobile(false)}
+            className="mt-2 text-red-500 text-sm"
+          >
+            Close
+          </button>
         </div>
       )}
     </div>
