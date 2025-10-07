@@ -26,21 +26,24 @@ export const ChatRoom = () => {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const members = useMembers();
-  const { messages, replyTo, setReplyTo, loading, setMessages } = useMessages();
+  const {
+    messages,
+    replyTo,
+    setReplyTo,
+    loading,
+    setMessages,
+    bottomRef,
+  } = useMessages();
+
   const [showMembersMobile, setShowMembersMobile] = useState(false);
   const [expandMembersDesktop, setExpandMembersDesktop] = useState(false);
   const mobilePopupRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (currentUser.id === 'unknown') {
       navigate('/');
     }
   }, []);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -128,7 +131,7 @@ export const ChatRoom = () => {
       {showMembersMobile && (
         <div
           ref={mobilePopupRef}
-          className="fixed top-20 right-4 w-[260px] max-h-[70vh] bg-white dark:bg-gray-800 border rounded-xl shadow-2xl p-4 z-40 overflow-hidden"
+          className="fixed top-20 right-4 w-[260px] max-h-[70vh] bg-white dark:bg-gray-800 border rounded-xl shadow-2xl p-4 z-40 overflow-hidden animate-slide-up"
         >
           <div className="overflow-y-auto max-h-[55vh] pr-1 custom-scroll">
             <MemberList members={members} />

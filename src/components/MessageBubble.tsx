@@ -1,7 +1,8 @@
-import { Message } from "../types/Message";
-import dayjs from "dayjs";
-import { ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
-import { useSwipeable } from "react-swipeable";
+import { Message } from '../types/Message';
+import dayjs from 'dayjs';
+import { ArrowUturnLeftIcon } from '@heroicons/react/24/outline';
+import { useSwipeable } from 'react-swipeable';
+import { useState } from 'react';
 
 export const MessageBubble = ({
   message,
@@ -12,26 +13,37 @@ export const MessageBubble = ({
   isOwn: boolean;
   onReply: (msg: Message) => void;
 }) => {
+  const [isSwiping, setIsSwiping] = useState(false);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   const bubbleColor = isOwn
-    ? "bg-[#DCF8C6] dark:bg-[#005C4B]" // WhatsApp green (light) / dark green
-    : "bg-white dark:bg-[#1E1E1E]"; // white / WhatsApp dark gray
+    ? 'bg-[#DCF8C6] dark:bg-[#005C4B]'
+    : 'bg-white dark:bg-[#1E1E1E]';
 
   const replyBg = isOwn
-    ? "bg-[#E6F3D9] dark:bg-[#0A3D33]" // lighter green (noticeable contrast)
-    : "bg-[#F5F5F5] dark:bg-[#2A2A2A]"; // soft gray (noticeable contrast)
+    ? 'bg-[#E6F3D9] dark:bg-[#0A3D33]'
+    : 'bg-[#F5F5F5] dark:bg-[#2A2A2A]';
 
   const replyBorder = isOwn
-    ? "border-[#CDEBBE] dark:border-[#0F5C4B]"
-    : "border-[#E0E0E0] dark:border-[#444]";
+    ? 'border-[#CDEBBE] dark:border-[#0F5C4B]'
+    : 'border-[#E0E0E0] dark:border-[#444]';
 
-  const replyTextColor = "text-gray-800 dark:text-[#CCCCCC]";
-  const replySenderColor = "text-gray-700 dark:text-[#B3B3B3]";
+  const replyTextColor = 'text-gray-800 dark:text-[#CCCCCC]';
+  const replySenderColor = 'text-gray-700 dark:text-[#B3B3B3]';
 
-  const alignment = isOwn ? "items-end" : "items-start";
-  const textAlign = isOwn ? "text-right" : "text-left";
+  const alignment = isOwn ? 'items-end' : 'items-start';
+  const textAlign = isOwn ? 'text-right' : 'text-left';
 
   const swipeHandlers = useSwipeable({
-    onSwipedRight: () => onReply(message),
+    onSwipedRight: (eventData) => {
+      if (isMobile && eventData.absX > 40) {
+        setIsSwiping(true);
+        setTimeout(() => {
+          onReply(message);
+          setIsSwiping(false);
+        }, 200); // match animation duration
+      }
+    },
     delta: 40,
     preventScrollOnSwipe: true,
     trackTouch: true,
@@ -45,7 +57,9 @@ export const MessageBubble = ({
       </div>
 
       <div
-        className={`relative max-w-[90%] md:max-w-[80%] px-4 pt-3 pb-6 rounded-xl shadow-sm ${bubbleColor}`}
+        className={`relative max-w-[90%] md:max-w-[80%] px-4 pt-3 pb-6 rounded-xl shadow-sm ${bubbleColor} ${
+          isSwiping ? 'swipe-right' : ''
+        } transition-transform duration-200 ease-out`}
       >
         {message.replyTo && (
           <div
@@ -58,7 +72,7 @@ export const MessageBubble = ({
           </div>
         )}
 
-        {message.type === "document" ? (
+        {message.type === 'document' ? (
           <a
             href={message.content}
             target="_blank"
@@ -81,8 +95,8 @@ export const MessageBubble = ({
       </div>
 
       <div className="mt-1 text-[10px] text-gray-400 flex items-center gap-1">
-        {dayjs(message.timestamp).format("HH:mm")}
-        {isOwn && (message.status === "delivered" || !message.status) && (
+        {dayjs(message.timestamp).format('HH:mm')}
+        {isOwn && (message.status === 'delivered' || !message.status) && (
           <span>✔️</span>
         )}
       </div>
