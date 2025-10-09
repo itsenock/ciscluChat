@@ -17,7 +17,7 @@
   animation: slide-up 0.3s ease-out;
 }
 .swipe-right {
-  transform: translateX(40px);
+  transform: translateX(70px);
   transition: transform 0.2s ease-out;
 }
 
@@ -29,5 +29,13 @@ html, body {
 }
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar but allow scroll */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }

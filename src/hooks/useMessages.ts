@@ -1,5 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { Message } from "../types/Message";
+import { io } from "socket.io-client";
+
+const socket = io("https://chat-room-1e3o.onrender.com");
 
 export const useMessages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -8,41 +11,51 @@ export const useMessages = () => {
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    });
   };
 
-  const fetchMessages = async (showLoading = true) => {
+  const fetchMessages = async () => {
     try {
-      if (showLoading && messages.length === 0) setLoading(true); // only show spinner on first load
       const res = await fetch("https://chat-room-1e3o.onrender.com/api/messages");
       const data = await res.json();
-
-      if (JSON.stringify(data) !== JSON.stringify(messages)) {
-        setMessages(data);
-        scrollToBottom();
-      }
+      setMessages(data);
+      scrollToBottom();
     } catch (err) {
       console.error("Failed to fetch messages:", err);
     } finally {
-      if (showLoading) setLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMessages(true); // initial load with spinner
+    fetchMessages();
 
-    const handleRefresh = () => fetchMessages(true); // manual refresh with spinner
+    socket.on("new-message", (msg: Message) => {
+      setMessages((prev) => [...prev, msg]);
+      scrollToBottom();
+    });
+
+    const handleRefresh = () => {
+      fetchMessages();
+    };
+
     window.addEventListener("message-sent", handleRefresh);
 
-    const interval = setInterval(() => {
-      fetchMessages(false); // silent refresh
-    }, 1500);
-
     return () => {
+      socket.off("new-message");
       window.removeEventListener("message-sent", handleRefresh);
-      clearInterval(interval);
     };
-  }, [messages]);
+  }, []);
 
-  return { messages, replyTo, setReplyTo, loading, setMessages, bottomRef };
+  return {
+    messages,
+    setMessages,
+    replyTo,
+    setReplyTo,
+    loading,
+    bottomRef,
+    scrollToBottom,
+  };
 };

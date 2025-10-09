@@ -33,6 +33,7 @@ export const ChatRoom = () => {
     loading,
     setMessages,
     bottomRef,
+    scrollToBottom,
   } = useMessages();
 
   const [showMembersMobile, setShowMembersMobile] = useState(false);
@@ -66,7 +67,6 @@ export const ChatRoom = () => {
         <ChatHeader
           name="CISLU Tech Group"
           description="A space for tech discussions, updates, and collaboration."
-          memberCount={members.length}
         />
 
         {/* Messages */}
@@ -94,6 +94,7 @@ export const ChatRoom = () => {
           clearReply={() => setReplyTo(undefined)}
           currentUser={currentUser}
           setMessages={setMessages}
+          scrollToBottom={scrollToBottom}
         />
       </div>
 
