@@ -41,7 +41,7 @@ export const MessageBubble = ({
         setTimeout(() => {
           onReply(message);
           setIsSwiping(false);
-        }, 200); // match animation duration
+        }, 200);
       }
     },
     delta: 40,
@@ -50,17 +50,26 @@ export const MessageBubble = ({
     trackMouse: false,
   });
 
+  // ✅ Defensive content rendering
+  const safeContent =
+    typeof message.content === 'string'
+      ? message.content
+      : JSON.stringify(message.content);
+
   return (
     <div {...swipeHandlers} className={`flex flex-col ${alignment} group`}>
+      {/* Sender name */}
       <div className={`text-xs text-gray-500 dark:text-gray-400 ${textAlign}`}>
         {message.senderName}
       </div>
 
+      {/* Message bubble */}
       <div
         className={`relative max-w-[90%] md:max-w-[80%] px-4 pt-3 pb-6 rounded-xl shadow-sm ${bubbleColor} ${
           isSwiping ? 'swipe-right' : ''
         } transition-transform duration-200 ease-out`}
       >
+        {/* Reply preview */}
         {message.replyTo && (
           <div
             className={`mb-3 rounded-md px-3 py-2 text-sm italic border-l-4 ${replyBg} ${replyBorder} ${replyTextColor}`}
@@ -72,20 +81,23 @@ export const MessageBubble = ({
           </div>
         )}
 
+        {/* Message content */}
         {message.type === 'document' ? (
           <a
-            href={message.content}
+            href={safeContent}
             target="_blank"
+            rel="noopener noreferrer"
             className="text-blue-600 underline text-sm"
           >
             📄 View Document
           </a>
         ) : (
           <p className="text-sm whitespace-pre-wrap break-words text-gray-900 dark:text-[#EDEDED]">
-            {message.content}
+            {safeContent}
           </p>
         )}
 
+        {/* Reply button */}
         <button
           onClick={() => onReply(message)}
           className="absolute bottom-1 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -94,6 +106,7 @@ export const MessageBubble = ({
         </button>
       </div>
 
+      {/* Timestamp and status */}
       <div className="mt-1 text-[10px] text-gray-400 flex items-center gap-1">
         {dayjs(message.timestamp).format('HH:mm')}
         {isOwn && (message.status === 'delivered' || !message.status) && (

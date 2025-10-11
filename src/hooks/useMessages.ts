@@ -1,14 +1,14 @@
 import { useEffect, useState, useRef } from "react";
 import { Message } from "../types/Message";
-import { io } from "socket.io-client";
 
-const socket = io("wss://chat-room-1e3o.onrender.com/ws/chat");
+let socket: WebSocket | null = null;
 
 export const useMessages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [replyTo, setReplyTo] = useState<Message | undefined>();
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
@@ -18,9 +18,7 @@ export const useMessages = () => {
 
   const fetchMessages = async () => {
     try {
-      const res = await fetch(
-        "https://chat-room-1e3o.onrender.com/api/messages"
-      );
+      const res = await fetch("https://chat-room-1e3o.onrender.com/api/messages");
       const data = await res.json();
       setMessages(data);
       scrollToBottom();
@@ -31,13 +29,45 @@ export const useMessages = () => {
     }
   };
 
+  const connectWebSocket = () => {
+    socket = new WebSocket("wss://chat-room-1e3o.onrender.com/ws/chat");
+
+    socket.onopen = () => {
+      console.log("✅ Connected to WebSocket");
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const msg: Message = JSON.parse(event.data);
+
+        if (
+          typeof msg === "object" &&
+          msg !== null &&
+          typeof msg.content === "string" &&
+          typeof msg.senderName === "string"
+        ) {
+          setMessages((prev) => [...prev, msg]);
+          scrollToBottom();
+        }
+      } catch (err) {
+        console.error("❌ Failed to parse WebSocket message:", err);
+      }
+    };
+
+    socket.onclose = () => {
+      console.warn("⚠️ WebSocket closed. Reconnecting in 3s...");
+      reconnectTimeout.current = setTimeout(connectWebSocket, 3000);
+    };
+
+    socket.onerror = (err) => {
+      console.error("❌ WebSocket error:", err);
+      socket?.close();
+    };
+  };
+
   useEffect(() => {
     fetchMessages();
-
-    socket.on("new-message", (msg: Message) => {
-      setMessages((prev) => [...prev, msg]);
-      scrollToBottom();
-    });
+    connectWebSocket();
 
     const handleRefresh = () => {
       fetchMessages();
@@ -46,10 +76,19 @@ export const useMessages = () => {
     window.addEventListener("message-sent", handleRefresh);
 
     return () => {
-      socket.off("new-message");
+      socket?.close();
+      if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current);
       window.removeEventListener("message-sent", handleRefresh);
     };
   }, []);
+
+  const sendViaSocket = (msg: Message) => {
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify(msg));
+    } else {
+      console.warn("WebSocket not open. Message not sent.");
+    }
+  };
 
   return {
     messages,
@@ -59,5 +98,6 @@ export const useMessages = () => {
     loading,
     bottomRef,
     scrollToBottom,
+    sendViaSocket,
   };
 };

@@ -12,12 +12,14 @@ export const MessageInput = ({
   currentUser,
   setMessages,
   scrollToBottom,
+  sendViaSocket, // ✅ added WebSocket sender
 }: {
   replyTo?: Message;
   clearReply: () => void;
   currentUser: { id: string; name: string };
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   scrollToBottom: () => void;
+  sendViaSocket: (msg: Message) => void; // ✅ added prop type
 }) => {
   const [input, setInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,6 +47,7 @@ export const MessageInput = ({
 
     setMessages((prev) => [...prev, newMessage]);
     scrollToBottom();
+    sendViaSocket(newMessage); // ✅ send to WebSocket
 
     try {
       await fetch("https://chat-room-1e3o.onrender.com/api/messages", {
@@ -52,6 +55,7 @@ export const MessageInput = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newMessage),
       });
+
       window.dispatchEvent(new Event("message-sent"));
       setInput("");
       clearReply();
@@ -111,6 +115,7 @@ export const MessageInput = ({
 
       setMessages((prev) => [...prev, docMessage]);
       scrollToBottom();
+      sendViaSocket(docMessage); // ✅ send document via WebSocket
 
       await fetch("https://chat-room-1e3o.onrender.com/api/messages", {
         method: "POST",
