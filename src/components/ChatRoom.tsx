@@ -34,7 +34,7 @@ export const ChatRoom = () => {
     setMessages,
     bottomRef,
     scrollToBottom,
-    sendViaSocket, // ✅ WebSocket sender
+    sendViaSocket,
   } = useMessages();
 
   const [showMembersMobile, setShowMembersMobile] = useState(false);
@@ -76,9 +76,9 @@ export const ChatRoom = () => {
             <LoadingSpinner />
           ) : (
             <>
-              {messages.map((msg) => (
+              {messages.map((msg, index) => (
                 <MessageBubble
-                  key={msg.id}
+                  key={msg.id || `${msg.senderId}-${msg.timestamp}-${index}`} // ✅ Unique fallback key
                   message={msg}
                   isOwn={msg.senderId === currentUser.id}
                   onReply={setReplyTo}
@@ -96,7 +96,7 @@ export const ChatRoom = () => {
           currentUser={currentUser}
           setMessages={setMessages}
           scrollToBottom={scrollToBottom}
-          sendViaSocket={sendViaSocket} // ✅ pass WebSocket sender
+          sendViaSocket={sendViaSocket}
         />
       </div>
 

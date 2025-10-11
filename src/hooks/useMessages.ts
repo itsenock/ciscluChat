@@ -18,9 +18,18 @@ export const useMessages = () => {
 
   const fetchMessages = async () => {
     try {
-      const res = await fetch("https://chat-room-1e3o.onrender.com/api/messages");
+      const res = await fetch(
+        "https://chat-room-1e3o.onrender.com/api/messages"
+      );
       const data = await res.json();
-      setMessages(data);
+
+      // ✅ Avoid duplicates when merging
+      setMessages((prev) => {
+        const existingIds = new Set(prev.map((m) => m.id));
+        const newMessages = data.filter((m: Message) => !existingIds.has(m.id));
+        return [...prev, ...newMessages];
+      });
+
       scrollToBottom();
     } catch (err) {
       console.error("Failed to fetch messages:", err);
@@ -40,15 +49,13 @@ export const useMessages = () => {
       try {
         const msg: Message = JSON.parse(event.data);
 
-        if (
-          typeof msg === "object" &&
-          msg !== null &&
-          typeof msg.content === "string" &&
-          typeof msg.senderName === "string"
-        ) {
-          setMessages((prev) => [...prev, msg]);
-          scrollToBottom();
-        }
+        // ✅ Accept and inject all valid messages
+        setMessages((prev) => {
+          const exists = prev.some((m) => m.id === msg.id);
+          return exists ? prev : [...prev, msg];
+        });
+
+        scrollToBottom();
       } catch (err) {
         console.error("❌ Failed to parse WebSocket message:", err);
       }
