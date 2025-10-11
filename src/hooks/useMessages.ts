@@ -52,27 +52,27 @@ export const useMessages = () => {
     socket.onmessage = (event) => {
       console.log("📩 WebSocket message received:", event.data);
       try {
-        const msg: Message = JSON.parse(event.data);
+        const serverMsg: Message = JSON.parse(event.data);
 
-        if (!msg || typeof msg !== "object") {
-          console.warn("⚠️ Ignored non-object message:", msg);
+        if (!serverMsg || typeof serverMsg !== "object") {
+          console.warn("⚠️ Ignored non-object message:", serverMsg);
           return;
         }
 
-        if (!msg.id || !msg.content || !msg.senderName) {
+        if (!serverMsg.id || !serverMsg.content || !serverMsg.senderName) {
           console.error("❌ Malformed message received from backend:");
-          console.error("🔍 Parsed object:", msg);
+          console.error("🔍 Parsed object:", serverMsg);
           return;
         }
 
         setMessages((prev) => {
-          const exists = prev.some((m) => m.id === msg.id);
+          const exists = prev.some((m) => m.id === serverMsg.id);
           if (exists) {
-            console.log("🔁 Duplicate message ignored:", msg.id);
+            console.log("🔁 Duplicate message ignored:", serverMsg.id);
             return prev;
           }
-          console.log("🆕 New message added:", msg);
-          return [...prev, msg];
+          console.log("🆕 Appending new message:", serverMsg);
+          return [...prev, serverMsg];
         });
 
         scrollToBottom();
