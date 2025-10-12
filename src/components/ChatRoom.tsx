@@ -9,8 +9,9 @@ import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect, useRef } from "react";
 import { HomeIcon, UsersIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
+import { Message } from "../types/Message";
 
-const getCurrentUser = () => {
+const getCurrentUser = (): { id: string; name: string } => {
   try {
     const raw = localStorage.getItem("chat-user");
     if (!raw) return { id: "unknown", name: "Anonymous" };
@@ -28,10 +29,10 @@ export const ChatRoom = () => {
   const members = useMembers();
   const {
     messages,
+    setMessages,
     replyTo,
     setReplyTo,
     loading,
-    setMessages,
     bottomRef,
     scrollToBottom,
     sendViaSocket,
@@ -78,7 +79,7 @@ export const ChatRoom = () => {
             <>
               {messages.map((msg, index) => (
                 <MessageBubble
-                  key={msg.id || `${msg.senderId}-${msg.timestamp}-${index}`} // ✅ Unique fallback key
+                  key={msg.id || `${msg.senderId}-${msg.timestamp}-${index}`}
                   message={msg}
                   isOwn={msg.senderId === currentUser.id}
                   onReply={setReplyTo}
@@ -94,9 +95,9 @@ export const ChatRoom = () => {
           replyTo={replyTo}
           clearReply={() => setReplyTo(undefined)}
           currentUser={currentUser}
-          setMessages={setMessages}
           scrollToBottom={scrollToBottom}
           sendViaSocket={sendViaSocket}
+          setMessages={setMessages}
         />
       </div>
 

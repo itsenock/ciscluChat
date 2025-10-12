@@ -5,10 +5,11 @@ export interface Message {
   content: string;
   type: "text" | "document";
   timestamp: number;
-  status?: "sent" | "delivered";
+  status: "sent" | "delivered";
   replyTo?: {
     id: string;
     content: string;
     senderName: string;
   };
+  localId?: string; // ✅ Add this line
 }

@@ -10,16 +10,16 @@ export const MessageInput = ({
   replyTo,
   clearReply,
   currentUser,
-  setMessages,
   scrollToBottom,
-  sendViaSocket, // ✅ added WebSocket sender
+  sendViaSocket,
+  setMessages,
 }: {
   replyTo?: Message;
   clearReply: () => void;
   currentUser: { id: string; name: string };
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   scrollToBottom: () => void;
-  sendViaSocket: (msg: Message) => void; // ✅ added prop type
+  sendViaSocket: (msg: Message & { localId?: string }) => void;
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }) => {
   const [input, setInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,14 +28,17 @@ export const MessageInput = ({
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessage: Message = {
-      id: `local-${Date.now()}`,
+    const now = Date.now();
+    const localId = `local-${now}`;
+    const newMessage: Message & { localId?: string } = {
+      id: localId,
+      localId,
       senderId: currentUser.id,
       senderName: currentUser.name,
       content: input,
       type: "text",
-      timestamp: Date.now(),
-      status: "delivered",
+      timestamp: now,
+      status: "sent",
       replyTo: replyTo
         ? {
             id: replyTo.id,
@@ -45,16 +48,27 @@ export const MessageInput = ({
         : undefined,
     };
 
+    console.log("📝 Creating new message:", newMessage);
+
     setMessages((prev) => [...prev, newMessage]);
     scrollToBottom();
-    sendViaSocket(newMessage); // ✅ send to WebSocket
+
+    console.log("📤 Sending message via WebSocket...");
+    sendViaSocket(newMessage);
 
     try {
-      await fetch("https://chat-room-1e3o.onrender.com/api/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newMessage),
-      });
+      console.log("🌐 Sending message to REST API...");
+      const res = await fetch(
+        "https://chat-room-1e3o.onrender.com/api/messages",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newMessage),
+        }
+      );
+
+      const result = await res.json();
+      console.log("✅ REST API response:", result);
 
       window.dispatchEvent(new Event("message-sent"));
       setInput("");
@@ -64,7 +78,7 @@ export const MessageInput = ({
         textareaRef.current.style.height = "40px";
       }
     } catch (err) {
-      console.error("Failed to send message:", err);
+      console.error("❌ Failed to send message via REST:", err);
     }
   };
 
@@ -85,25 +99,35 @@ export const MessageInput = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    console.log("📎 File selected for upload:", file.name);
+
     const formData = new FormData();
     formData.append("document", file);
 
     try {
-      const res = await fetch("https://chat-room-1e3o.onrender.com/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+      console.log("🌐 Uploading document to backend...");
+      const res = await fetch(
+        "https://chat-room-1e3o.onrender.com/api/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const { url } = await res.json();
+      console.log("✅ Document uploaded. URL received:", url);
 
-      const docMessage: Message = {
-        id: `local-${Date.now()}`,
+      const now = Date.now();
+      const localId = `local-${now}`;
+      const docMessage: Message & { localId?: string } = {
+        id: localId,
+        localId,
         senderId: currentUser.id,
         senderName: currentUser.name,
         content: url,
         type: "document",
-        timestamp: Date.now(),
-        status: "delivered",
+        timestamp: now,
+        status: "sent",
         replyTo: replyTo
           ? {
               id: replyTo.id,
@@ -113,20 +137,31 @@ export const MessageInput = ({
           : undefined,
       };
 
+      console.log("📝 Creating document message:", docMessage);
+
       setMessages((prev) => [...prev, docMessage]);
       scrollToBottom();
-      sendViaSocket(docMessage); // ✅ send document via WebSocket
 
-      await fetch("https://chat-room-1e3o.onrender.com/api/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(docMessage),
-      });
+      console.log("📤 Sending document message via WebSocket...");
+      sendViaSocket(docMessage);
+
+      console.log("🌐 Sending document message to REST API...");
+      const postRes = await fetch(
+        "https://chat-room-1e3o.onrender.com/api/messages",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(docMessage),
+        }
+      );
+
+      const result = await postRes.json();
+      console.log("✅ REST API response for document:", result);
 
       window.dispatchEvent(new Event("message-sent"));
       clearReply();
     } catch (err) {
-      console.error("Failed to upload document:", err);
+      console.error("❌ Failed to upload document:", err);
     }
   };
 

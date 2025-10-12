@@ -19,12 +19,9 @@ export const useMessages = () => {
   const fetchMessages = async () => {
     console.log("📥 Fetching messages from REST API...");
     try {
-      const res = await fetch(
-        "https://chat-room-1e3o.onrender.com/api/messages"
-      );
+      const res = await fetch("https://chat-room-1e3o.onrender.com/api/messages");
       const data = await res.json();
-
-      console.log("✅ Messages fetched:", data);
+      console.log("✅ Messages fetched from backend:", data);
 
       setMessages((prev) => {
         const existingIds = new Set(prev.map((m) => m.id));
@@ -53,40 +50,43 @@ export const useMessages = () => {
       console.log("📩 WebSocket message received:", event.data);
       try {
         const serverMsg: Message = JSON.parse(event.data);
-
-        if (!serverMsg || typeof serverMsg !== "object") {
-          console.warn("⚠️ Ignored non-object message:", serverMsg);
-          return;
-        }
+        console.log("🔍 Parsed WebSocket message:", serverMsg);
 
         if (!serverMsg.id || !serverMsg.content || !serverMsg.senderName) {
-          console.error("❌ Malformed message received from backend:");
-          console.error("🔍 Parsed object:", serverMsg);
+          console.warn("⚠️ Ignored malformed message:", serverMsg);
           return;
         }
 
         setMessages((prev) => {
-          const exists = prev.some((m) => m.id === serverMsg.id);
-          if (exists) {
-            console.log("🔁 Duplicate message ignored:", serverMsg.id);
+          const match = prev.find(
+            (m) => m.id === serverMsg.localId || m.localId === serverMsg.localId
+          );
+
+          if (match) {
+            console.log("🔁 Replacing local message with confirmed:", serverMsg);
+            return prev.map((m) =>
+              m.id === match.id ? { ...serverMsg, status: "delivered" } : m
+            );
+          }
+
+          const alreadyExists = prev.some((m) => m.id === serverMsg.id);
+          if (alreadyExists) {
+            console.log("🔁 Duplicate confirmed message ignored:", serverMsg.id);
             return prev;
           }
-          console.log("🆕 Appending new message:", serverMsg);
+
+          console.log("🆕 Appending new message from backend:", serverMsg);
           return [...prev, serverMsg];
         });
 
         scrollToBottom();
       } catch (err) {
-        console.error("❌ Failed to parse WebSocket message:");
-        console.error("🔍 Raw payload:", event.data);
-        console.error("📛 Error:", err);
+        console.error("❌ Failed to parse WebSocket message:", err);
       }
     };
 
     socket.onclose = (event) => {
-      console.warn(
-        `⚠️ WebSocket closed (code ${event.code}). Reconnecting in 3s...`
-      );
+      console.warn(`⚠️ WebSocket closed (code ${event.code}). Reconnecting in 3s...`);
       reconnectTimeout.current = setTimeout(connectWebSocket, 3000);
     };
 
@@ -117,8 +117,8 @@ export const useMessages = () => {
   }, []);
 
   const sendViaSocket = (msg: Message) => {
-    console.log("📤 Sending message via WebSocket:", msg);
     if (socket?.readyState === WebSocket.OPEN) {
+      console.log("📤 Sending message via WebSocket:", msg);
       socket.send(JSON.stringify(msg));
     } else {
       console.warn("⚠️ WebSocket not open. Message not sent:", msg);
